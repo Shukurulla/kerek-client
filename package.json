@@ -1,0 +1,55 @@
+{
+  "name": "mutaxassislar-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Professional specialists platform frontend",
+  "author": "Mutaxassislar Team",
+  "license": "MIT",
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.8.0",
+    "@reduxjs/toolkit": "^1.9.0",
+    "react-redux": "^8.0.5",
+    "axios": "^1.3.0",
+    "socket.io-client": "^4.6.0",
+    "react-hook-form": "^7.43.0",
+    "lucide-react": "^0.263.1",
+    "framer-motion": "^10.0.0",
+    "react-hot-toast": "^2.4.0",
+    "date-fns": "^2.29.0",
+    "react-image-crop": "^10.1.0",
+    "react-dropzone": "^14.2.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.0.0",
+    "vite": "^4.3.0",
+    "tailwindcss": "^3.3.0",
+    "autoprefixer": "^10.4.14",
+    "postcss": "^8.4.24",
+    "eslint": "^8.38.0",
+    "eslint-plugin-react": "^7.32.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "prettier": "^2.8.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint src --ext js,jsx --report-unused-disable-directives --max-warnings 0",
+    "lint:fix": "eslint src --ext js,jsx --fix",
+    "format": "prettier --write src/**/*.{js,jsx,css,md}"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}

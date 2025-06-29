@@ -1,14 +1,12 @@
-import React, { useState, useEffect } from "react";
+"use client";
+
+import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { Grid, List, Filter, Loader2, AlertCircle } from "lucide-react";
 import {
-  Grid,
-  List,
-  Filter,
-  SortAsc,
-  Loader2,
-  AlertCircle,
-} from "lucide-react";
-import { fetchSpecialists, setFilters } from "../../store/specialistsSlice";
+  searchSpecialists,
+  setSearchFilters,
+} from "../../store/specialistsSlice";
 import SpecialistCard from "./SpecialistCard";
 import SearchFilters from "./SearchFilters";
 import Button from "../UI/Button";
@@ -16,9 +14,10 @@ import Loading from "../UI/Loading";
 
 const SpecialistList = ({ initialFilters = {} }) => {
   const dispatch = useDispatch();
-  const { specialists, loading, error, pagination, filters } = useSelector(
-    (state) => state.specialists
-  );
+  const {
+    searchResults: { specialists, loading, error, hasMore, total },
+    searchResults: { filters },
+  } = useSelector((state) => state.specialists);
 
   const [viewMode, setViewMode] = useState("grid"); // 'grid' | 'list'
   const [showFilters, setShowFilters] = useState(false);
@@ -27,12 +26,12 @@ const SpecialistList = ({ initialFilters = {} }) => {
   useEffect(() => {
     // Set initial filters
     if (Object.keys(initialFilters).length > 0) {
-      dispatch(setFilters(initialFilters));
+      dispatch(setSearchFilters(initialFilters));
     }
 
     // Fetch specialists
     dispatch(
-      fetchSpecialists({
+      searchSpecialists({
         ...filters,
         ...initialFilters,
         sortBy,
@@ -42,9 +41,9 @@ const SpecialistList = ({ initialFilters = {} }) => {
   }, [dispatch, sortBy]);
 
   const handleFilterChange = (newFilters) => {
-    dispatch(setFilters(newFilters));
+    dispatch(setSearchFilters(newFilters));
     dispatch(
-      fetchSpecialists({
+      searchSpecialists({
         ...newFilters,
         sortBy,
         page: 1,
@@ -53,12 +52,12 @@ const SpecialistList = ({ initialFilters = {} }) => {
   };
 
   const handleLoadMore = () => {
-    if (!loading && pagination.hasNext) {
+    if (!loading && hasMore) {
       dispatch(
-        fetchSpecialists({
+        searchSpecialists({
           ...filters,
           sortBy,
-          page: pagination.current + 1,
+          loadMore: true,
         })
       );
     }
@@ -89,10 +88,8 @@ const SpecialistList = ({ initialFilters = {} }) => {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Mutaxassislar</h2>
-          {pagination.total > 0 && (
-            <p className="text-gray-600 mt-1">
-              {pagination.total} ta mutaxassis topildi
-            </p>
+          {total > 0 && (
+            <p className="text-gray-600 mt-1">{total} ta mutaxassis topildi</p>
           )}
         </div>
 
@@ -253,7 +250,7 @@ const SpecialistList = ({ initialFilters = {} }) => {
             variant="outline"
             size="sm"
             onClick={() =>
-              dispatch(fetchSpecialists({ ...filters, sortBy, page: 1 }))
+              dispatch(searchSpecialists({ ...filters, sortBy, page: 1 }))
             }
           >
             Qayta urinish
@@ -285,13 +282,13 @@ const SpecialistList = ({ initialFilters = {} }) => {
           </div>
 
           {/* Load more */}
-          {pagination.hasNext && (
+          {hasMore && (
             <div className="text-center">
               <Button
                 variant="outline"
                 onClick={handleLoadMore}
                 disabled={loading}
-                className="px-8"
+                className="px-8 bg-transparent"
               >
                 {loading ? (
                   <>
@@ -307,7 +304,7 @@ const SpecialistList = ({ initialFilters = {} }) => {
 
           {/* Pagination info */}
           <div className="text-center text-sm text-gray-500">
-            {specialists.length} / {pagination.total} ta mutaxassis ko'rsatildi
+            {specialists.length} / {total} ta mutaxassis ko'rsatildi
           </div>
         </>
       ) : (

@@ -1,24 +1,34 @@
-import React, { useState } from "react";
+"use client";
+
+import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Phone, ArrowRight, Loader2, AlertCircle } from "lucide-react";
-import { loginUser, verifyLogin } from "../../store/authSlice";
+import { login, loginVerify, resendCode } from "../../store/authSlice";
 import Button from "../UI/Button";
 import Input from "../UI/Input";
 
 const LoginForm = () => {
   const dispatch = useDispatch();
-  const { loading, error } = useSelector((state) => state.auth);
+  const { loading, error, verificationStep, tempUserId } = useSelector(
+    (state) => state.auth
+  );
 
   const [step, setStep] = useState("phone"); // 'phone' | 'verify'
   const [formData, setFormData] = useState({
     phone: "",
     code: "",
-    userId: null,
   });
   const [countdown, setCountdown] = useState(0);
 
+  // Sync with Redux state
+  useEffect(() => {
+    if (verificationStep === "code" && tempUserId) {
+      setStep("verify");
+    }
+  }, [verificationStep, tempUserId]);
+
   // Countdown timer for resend
-  React.useEffect(() => {
+  useEffect(() => {
     let timer;
     if (countdown > 0) {
       timer = setTimeout(() => setCountdown(countdown - 1), 1000);
@@ -28,47 +38,42 @@ const LoginForm = () => {
 
   const handlePhoneSubmit = async (e) => {
     e.preventDefault();
-
     if (!formData.phone) return;
 
-    const result = await dispatch(loginUser({ phone: formData.phone }));
-
+    const result = await dispatch(login(formData.phone));
     if (result.type === "auth/login/fulfilled") {
       setStep("verify");
-      setFormData((prev) => ({ ...prev, userId: result.payload.userId }));
       setCountdown(60);
     }
   };
 
   const handleVerifySubmit = async (e) => {
     e.preventDefault();
-
-    if (!formData.code || !formData.userId) return;
+    if (!formData.code || !tempUserId) return;
 
     const result = await dispatch(
-      verifyLogin({
-        userId: formData.userId,
+      loginVerify({
+        userId: tempUserId,
         code: formData.code,
       })
     );
 
-    if (result.type === "auth/verifyLogin/fulfilled") {
+    if (result.type === "auth/loginVerify/fulfilled") {
       // Redirect will be handled by useAuth hook
     }
   };
 
   const handleResendCode = async () => {
-    if (countdown > 0) return;
+    if (countdown > 0 || !tempUserId) return;
 
-    const result = await dispatch(loginUser({ phone: formData.phone }));
-    if (result.type === "auth/login/fulfilled") {
+    const result = await dispatch(resendCode(tempUserId));
+    if (result.type === "auth/resendCode/fulfilled") {
       setCountdown(60);
     }
   };
 
   const handlePhoneChange = (e) => {
     let value = e.target.value.replace(/\D/g, "");
-
     // Add +998 prefix if not present
     if (!value.startsWith("998")) {
       value = "998" + value;
@@ -151,7 +156,7 @@ const LoginForm = () => {
           <div className="mt-6 text-center">
             <button
               onClick={handleResendCode}
-              disabled={countdown > 0}
+              disabled={countdown > 0 || loading}
               className="text-blue-600 hover:text-blue-700 text-sm font-medium disabled:text-gray-400 disabled:cursor-not-allowed"
             >
               {countdown > 0
@@ -164,7 +169,7 @@ const LoginForm = () => {
             <button
               onClick={() => {
                 setStep("phone");
-                setFormData({ phone: "", code: "", userId: null });
+                setFormData({ phone: "", code: "" });
               }}
               className="text-gray-600 hover:text-gray-700 text-sm"
             >

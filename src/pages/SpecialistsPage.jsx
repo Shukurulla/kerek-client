@@ -1,9 +1,10 @@
-import React, { useEffect } from "react";
+"use client";
+
+import { useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { Search, Filter } from "lucide-react";
 import SpecialistList from "../components/Specialists/SpecialistList";
-import { setFilters } from "../store/specialistsSlice";
+import { setSearchFilters } from "../store/specialistsSlice";
 
 const SpecialistsPage = () => {
   const [searchParams] = useSearchParams();
@@ -20,10 +21,10 @@ const SpecialistsPage = () => {
     if (category) filters.category = category;
     if (city) filters.city = city;
     if (q) filters.q = q;
-    if (minRating) filters.minRating = parseFloat(minRating);
+    if (minRating) filters.minRating = Number.parseFloat(minRating);
 
     if (Object.keys(filters).length > 0) {
-      dispatch(setFilters(filters));
+      dispatch(setSearchFilters(filters));
     }
   }, [searchParams, dispatch]);
 

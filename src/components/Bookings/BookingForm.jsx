@@ -1,18 +1,18 @@
-import React, { useState, useEffect } from "react";
+"use client";
+
+import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {
-  MapPin,
   Calendar,
   DollarSign,
   FileText,
-  Clock,
   User,
   AlertCircle,
   Plus,
   X,
 } from "lucide-react";
 import { fetchCategories } from "../../store/categoriesSlice";
-import { fetchSpecialists } from "../../store/specialistsSlice";
+import { searchSpecialists } from "../../store/specialistsSlice";
 import { createBooking } from "../../store/bookingsSlice";
 import Button from "../UI/Button";
 import Input from "../UI/Input";
@@ -22,8 +22,10 @@ import { CITIES } from "../../utils/constants";
 
 const BookingForm = ({ specialistId, onClose, onSuccess }) => {
   const dispatch = useDispatch();
-  const { categories } = useSelector((state) => state.categories);
-  const { specialists } = useSelector((state) => state.specialists);
+  const { categories: categoriesState } = useSelector(
+    (state) => state.categories
+  );
+  const { searchResults } = useSelector((state) => state.specialists);
   const { user } = useSelector((state) => state.auth);
 
   const [step, setStep] = useState(1);
@@ -54,13 +56,17 @@ const BookingForm = ({ specialistId, onClose, onSuccess }) => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (categories.length === 0) {
+    if (categoriesState.list?.length === 0) {
       dispatch(fetchCategories());
     }
-    if (specialists.length === 0) {
-      dispatch(fetchSpecialists({ limit: 50 }));
+    if (searchResults.specialists?.length === 0) {
+      dispatch(searchSpecialists({ limit: 50 }));
     }
-  }, [dispatch, categories.length, specialists.length]);
+  }, [
+    dispatch,
+    categoriesState.list?.length,
+    searchResults.specialists?.length,
+  ]);
 
   const validateStep = (stepNumber) => {
     const newErrors = {};
@@ -77,13 +83,11 @@ const BookingForm = ({ specialistId, onClose, onSuccess }) => {
           newErrors.category = "Kategoriya tanlang";
         }
         break;
-
       case 2:
         if (!formData.specialist) {
           newErrors.specialist = "Mutaxassis tanlang";
         }
         break;
-
       case 3:
         if (!formData.scheduledDate) {
           newErrors.scheduledDate = "Sana tanlang";
@@ -95,7 +99,6 @@ const BookingForm = ({ specialistId, onClose, onSuccess }) => {
           newErrors.address = "Manzil kiriting yoki masofaviy ish tanlang";
         }
         break;
-
       case 4:
         if (!formData.budget.min && !formData.budget.max) {
           newErrors.budget = "Byudjet oralig'ini kiriting";
@@ -168,15 +171,14 @@ const BookingForm = ({ specialistId, onClose, onSuccess }) => {
           `${formData.scheduledDate}T${formData.scheduledTime}`
         ),
         budget: {
-          min: parseInt(formData.budget.min) || 0,
-          max: parseInt(formData.budget.max) || 0,
+          min: Number.parseInt(formData.budget.min) || 0,
+          max: Number.parseInt(formData.budget.max) || 0,
           currency: formData.budget.currency,
         },
       };
 
       const result = await dispatch(createBooking(bookingData));
-
-      if (result.type === "bookings/create/fulfilled") {
+      if (result.type === "bookings/createBooking/fulfilled") {
         if (onSuccess) onSuccess(result.payload);
         if (onClose) onClose();
       }
@@ -186,6 +188,9 @@ const BookingForm = ({ specialistId, onClose, onSuccess }) => {
       setLoading(false);
     }
   };
+
+  const specialists = searchResults.specialists || [];
+  const categories = categoriesState.list || [];
 
   const selectedSpecialist = specialists.find(
     (s) => s._id === formData.specialist
@@ -438,7 +443,6 @@ const BookingForm = ({ specialistId, onClose, onSuccess }) => {
                   min={new Date().toISOString().split("T")[0]}
                 />
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Boshlanish vaqti *
@@ -467,7 +471,7 @@ const BookingForm = ({ specialistId, onClose, onSuccess }) => {
                     handleNestedInputChange(
                       "estimatedDuration",
                       "value",
-                      parseInt(e.target.value)
+                      Number.parseInt(e.target.value)
                     )
                   }
                   className="flex-1"
@@ -626,7 +630,6 @@ const BookingForm = ({ specialistId, onClose, onSuccess }) => {
                   Bosqich qo'shish
                 </Button>
               </div>
-
               {formData.milestones.map((milestone, index) => (
                 <div
                   key={index}
@@ -645,7 +648,6 @@ const BookingForm = ({ specialistId, onClose, onSuccess }) => {
                       <X className="w-4 h-4" />
                     </Button>
                   </div>
-
                   <div className="space-y-3">
                     <Input
                       type="text"
@@ -679,7 +681,7 @@ const BookingForm = ({ specialistId, onClose, onSuccess }) => {
                         value={milestone.payment?.amount || ""}
                         onChange={(e) =>
                           updateMilestone(index, "payment", {
-                            amount: parseInt(e.target.value) || 0,
+                            amount: Number.parseInt(e.target.value) || 0,
                           })
                         }
                       />
@@ -749,7 +751,6 @@ const BookingForm = ({ specialistId, onClose, onSuccess }) => {
             <Button variant="outline" onClick={onClose}>
               Bekor qilish
             </Button>
-
             {step < 4 ? (
               <Button onClick={handleNext}>Davom etish</Button>
             ) : (

@@ -1,4 +1,12 @@
-import { useState, useCallback, useRef } from "react";
+"use client";
+
+import {
+  useState,
+  useCallback,
+  useRef,
+  createContext,
+  useContext,
+} from "react";
 
 const useToast = () => {
   const [toasts, setToasts] = useState([]);
@@ -210,11 +218,9 @@ const useToast = () => {
 };
 
 // Context for toast provider
-import { createContext, useContext } from "react";
-
 const ToastContext = createContext();
 
-export const ToastProvider = ({ children }) => {
+const ToastProvider = ({ children }) => {
   const toast = useToast();
 
   return (
@@ -222,7 +228,7 @@ export const ToastProvider = ({ children }) => {
   );
 };
 
-export const useToastContext = () => {
+const useToastContext = () => {
   const context = useContext(ToastContext);
   if (!context) {
     throw new Error("useToastContext must be used within ToastProvider");
@@ -231,3 +237,4 @@ export const useToastContext = () => {
 };
 
 export default useToast;
+export { ToastProvider, useToastContext, useToast };

@@ -8,7 +8,7 @@ import {
   MapPin,
   User,
 } from "lucide-react";
-import { registerUser, verifyUser } from "../../store/authSlice";
+import { register, verifyCode } from "../../store/authSlice";
 import { CITIES } from "../../utils/constants";
 import Button from "../UI/Button";
 import Input from "../UI/Input";
@@ -44,7 +44,7 @@ const RegisterForm = () => {
       return;
 
     const result = await dispatch(
-      registerUser({
+      register({
         name: formData.name,
         phone: formData.phone,
         city: formData.city,
@@ -65,7 +65,7 @@ const RegisterForm = () => {
     if (!formData.code || !formData.userId) return;
 
     const result = await dispatch(
-      verifyUser({
+      verifyCode({
         userId: formData.userId,
         code: formData.code,
       })
@@ -80,7 +80,7 @@ const RegisterForm = () => {
     if (countdown > 0) return;
 
     const result = await dispatch(
-      registerUser({
+      register({
         name: formData.name,
         phone: formData.phone,
         city: formData.city,

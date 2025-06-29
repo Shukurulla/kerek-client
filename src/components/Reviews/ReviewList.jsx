@@ -4,7 +4,7 @@ import ReviewCard from "./ReviewCard";
 import Button from "../UI/Button";
 import Loading from "../UI/Loading";
 import { useApi } from "../../hooks/useApi";
-import { useToast } from "../../hooks/useToast";
+import { useToast } from "../../hooks/useToast.jsx";
 
 const ReviewList = ({
   specialistId,

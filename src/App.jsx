@@ -1,11 +1,31 @@
-import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+"use client";
 
-// Simple route simulation
-const [currentRoute, setCurrentRoute] = useState('/');
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { Navigate, Routes } from "react-router-dom";
+import { AnimatePresence } from "framer-motion";
+import HomePage from "./pages/HomePage";
+import SpecialistsPage from "./pages/SpecialistsPage";
+import CategoriesPage from "./pages/CategoriesPage";
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
+import DashboardPage from "./pages/DashboardPage";
+import ProfilePage from "./pages/ProfilePage";
+import BookingsPage from "./pages/BookingsPage";
+import ChatPage from "./pages/ChatPage";
+import PaymentsPage from "./pages/PaymentsPage";
+import NotFoundPage from "./pages/NotFoundPage";
+import Header from "./components/Layout/Header";
+import Footer from "./components/Layout/Footer";
+import Loading from "./components/UI/Loading";
+import { checkAuth } from "./store/authSlice";
+import { useAuth } from "./hooks/useAuth";
+import { useSocket } from "./hooks/useSocket";
 
-// Route component simulation
 const Route = ({ path, element, isProtected = false }) => {
+  const { isAuthenticated } = useAuth();
+  const [currentRoute, setCurrentRoute] = useState("/");
+
   if (currentRoute === path) {
     if (isProtected && !isAuthenticated) {
       return <LoginPage />;
@@ -15,25 +35,15 @@ const Route = ({ path, element, isProtected = false }) => {
   return null;
 };
 
-// Navigation simulation
 const navigate = (path) => {
-  setCurrentRoute(path);
+  window.location.href = path; // Redirect using window.location
 };
 
-// Components
-import Header from './components/Layout/Header';
-import Footer from './components/Layout/Footer';
-import Loading from './components/UI/Loading';
-
-// Store
-import { checkAuth } from './store/authSlice';
-import { connectSocket, disconnectSocket } from './store/slices/socketSlice';
-
-// Hooks
-import { useAuth } from './hooks/useAuth';
-
-// Protected Route Component
-const ProtectedRoute = ({ children, requiredAuth = true, redirectTo = '/login' }) => {
+const ProtectedRoute = ({
+  children,
+  requiredAuth = true,
+  redirectTo = "/login",
+}) => {
   const { isAuthenticated, loading } = useAuth();
 
   if (loading) {
@@ -51,7 +61,6 @@ const ProtectedRoute = ({ children, requiredAuth = true, redirectTo = '/login' }
   return children;
 };
 
-// Public Route Component (for non-authenticated users)
 const PublicRoute = ({ children }) => {
   return (
     <ProtectedRoute requiredAuth={false} redirectTo="/dashboard">
@@ -63,25 +72,13 @@ const PublicRoute = ({ children }) => {
 function App() {
   const dispatch = useDispatch();
   const { isAuthenticated, loading } = useSelector((state) => state.auth);
+  const socket = useSocket();
 
   useEffect(() => {
-    // Check authentication on app start
     dispatch(checkAuth());
   }, [dispatch]);
 
-  useEffect(() => {
-    // Connect socket when authenticated
-    if (isAuthenticated) {
-      dispatch(connectSocket());
-    } else {
-      dispatch(disconnectSocket());
-    }
-
-    // Cleanup on unmount
-    return () => {
-      dispatch(disconnectSocket());
-    };
-  }, [isAuthenticated, dispatch]);
+  useEffect(() => {}, [isAuthenticated]);
 
   if (loading) {
     return <Loading />;
@@ -90,7 +87,7 @@ function App() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Header />
-      
+
       <main className="flex-grow">
         <AnimatePresence mode="wait">
           <Routes>
@@ -102,87 +99,87 @@ function App() {
             <Route path="/categories/:slug" element={<CategoriesPage />} />
 
             {/* Auth Routes (only for non-authenticated users) */}
-            <Route 
-              path="/login" 
+            <Route
+              path="/login"
               element={
                 <PublicRoute>
                   <LoginPage />
                 </PublicRoute>
-              } 
+              }
             />
-            <Route 
-              path="/register" 
+            <Route
+              path="/register"
               element={
                 <PublicRoute>
                   <RegisterPage />
                 </PublicRoute>
-              } 
+              }
             />
 
             {/* Protected Routes (only for authenticated users) */}
-            <Route 
-              path="/dashboard" 
+            <Route
+              path="/dashboard"
               element={
                 <ProtectedRoute>
                   <DashboardPage />
                 </ProtectedRoute>
-              } 
+              }
             />
-            <Route 
-              path="/profile" 
+            <Route
+              path="/profile"
               element={
                 <ProtectedRoute>
                   <ProfilePage />
                 </ProtectedRoute>
-              } 
+              }
             />
-            <Route 
-              path="/profile/:id" 
+            <Route
+              path="/profile/:id"
               element={
                 <ProtectedRoute>
                   <ProfilePage />
                 </ProtectedRoute>
-              } 
+              }
             />
-            <Route 
-              path="/bookings" 
+            <Route
+              path="/bookings"
               element={
                 <ProtectedRoute>
                   <BookingsPage />
                 </ProtectedRoute>
-              } 
+              }
             />
-            <Route 
-              path="/bookings/:id" 
+            <Route
+              path="/bookings/:id"
               element={
                 <ProtectedRoute>
                   <BookingsPage />
                 </ProtectedRoute>
-              } 
+              }
             />
-            <Route 
-              path="/chat" 
+            <Route
+              path="/chat"
               element={
                 <ProtectedRoute>
                   <ChatPage />
                 </ProtectedRoute>
-              } 
+              }
             />
-            <Route 
-              path="/chat/:id" 
+            <Route
+              path="/chat/:id"
               element={
                 <ProtectedRoute>
                   <ChatPage />
                 </ProtectedRoute>
-              } 
+              }
             />
-            <Route 
-              path="/payments" 
+            <Route
+              path="/payments"
               element={
                 <ProtectedRoute>
                   <PaymentsPage />
                 </ProtectedRoute>
-              } 
+              }
             />
 
             {/* Fallback Route */}
